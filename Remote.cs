@@ -181,7 +181,7 @@ namespace Remote
 							// Выносятся в настройки.
 
 							Uri SnapshotUri = new Uri($"https://api.binance.com/api/v3/depth?symbol={symbol.ToUpper()}&limit=1000");
-							Uri WSSUri = new Uri($"wss://stream.binance.com:9443/ws/{symbol}@depth".ToLower());
+							Uri WSSUri = new Uri($"wss://stream.binance.com:9443/ws/{symbol}@depth@1000ms".ToLower());
 
 							using (DataRemoteSnapshotClient RemoteClient = new DataRemoteSnapshotClient(symbol, SnapshotUri))
 								while (true)
