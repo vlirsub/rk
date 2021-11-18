@@ -60,7 +60,7 @@ namespace WpfApp1
 			level2Window.Owner = Owner;
 
 			// Очередь обновлений
-			DataQueue queue = new DataQueue();
+			DataQueue queue = new DataQueue(cts.Token);
 
 			// Клиент читающий данные от удалённого сервера
 			IRemoteClient RemoteClient = new DataRemoteClient();

@@ -53,7 +53,7 @@ namespace Queue
 	/// </summary>
 	public interface IDataGet
 	{
-		bool Dequeue(out DataPacket[] packets, CancellationToken token);
+		bool Dequeue(out DataPacket[] packets);
 	}
 
 	namespace Impl
@@ -66,6 +66,12 @@ namespace Queue
 			private Queue<DataPacket> _queue = new Queue<DataPacket>();
 			private object _lock = new object();
 			private AutoResetEvent _event = new AutoResetEvent(false);
+			private readonly CancellationToken _token;
+
+			public DataQueue(CancellationToken token)
+			{
+				_token = token;
+			}
 
 			public void Enqueue(DataPacket packet)
 			{
@@ -88,9 +94,9 @@ namespace Queue
 				Enqueue(DataPacket.New(E));
 			}
 
-			public bool Dequeue(out DataPacket[] packets, CancellationToken token)
+			public bool Dequeue(out DataPacket[] packets)
 			{
-				WaitHandle[] handles = new WaitHandle[] { _event, token.WaitHandle };
+				WaitHandle[] handles = new WaitHandle[] { _event, _token.WaitHandle };
 				int w = WaitHandle.WaitAny(handles);
 
 				if (w == 0)

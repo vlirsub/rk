@@ -44,7 +44,7 @@ namespace DataSource
 					{
 						try
 						{
-							if (queue.Dequeue(out DataPacket[] packets, cts.Token))
+							if (queue.Dequeue(out DataPacket[] packets))
 								for (var i = 0; i < packets.Length; i++)
 								{
 									if (packets[i].Kind == DataPacketKind.Error)
