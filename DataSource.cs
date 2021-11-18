@@ -50,7 +50,7 @@ namespace DataSource
 									if (packets[i].Kind == DataPacketKind.Error)
 									{
 										Exception E = packets[i].Data as Exception;
-
+										throw E;
 									}
 									else if (packets[i].Kind == DataPacketKind.Snapshot)
 									{
