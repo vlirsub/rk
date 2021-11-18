@@ -12,12 +12,12 @@ namespace DataSource
 	using Queue;
 	using Data.Level2;
 
-	public delegate void Level2ChangedHandler(PriceItem[] bids, PriceItem[] asks);
+	public delegate void Level2ChangedHandler(IDictionary<double, double> bids, IDictionary<double, double> asks);
 	public delegate void Level2ChangedExceptionHandler(Exception E);
 
 	public interface ILevel2Notify
 	{
-		void Level2Changed(PriceItem[] bids, PriceItem[] asks);
+		void Level2Changed(IDictionary<double, double> bids, IDictionary<double, double> asks);
 		void Level2ChangedException(Exception E);
 	}
 
@@ -57,13 +57,11 @@ namespace DataSource
 										Level2Snapshot l2s = packets[i].Data as Level2Snapshot;
 										level2.SetSnapshot(l2s);
 
-										var b = level2.Bids.Select(kv => new PriceItem(kv.Key, kv.Value))
-											.OrderByDescending(k=> k.Price);
+										IDictionary<double, double> b = new Dictionary<double, double>(level2.Bids);
 
-										var a = level2.Asks.Select(kv => new PriceItem(kv.Key, kv.Value))
-											.OrderByDescending(k => k.Price);
+										IDictionary<double, double> a = new Dictionary<double, double>(level2.Asks);
 
-										Level2Changed?.Invoke(b.ToArray(), a.ToArray());
+										Level2Changed?.Invoke(b, a);
 
 									}
 									else if (packets[i].Kind == DataPacketKind.Diff)
@@ -71,10 +69,11 @@ namespace DataSource
 										DiffData dd = packets[i].Data as DiffData;
 										level2.AddDiff(dd);
 
-										var b = level2.Bids.Select(kv => new PriceItem(kv.Key, kv.Value));
-										var a = level2.Asks.Select(kv => new PriceItem(kv.Key, kv.Value));
+										IDictionary<double, double> b = new Dictionary<double, double>(level2.Bids);
 
-										Level2Changed?.Invoke(b.ToArray(), a.ToArray());
+										IDictionary<double, double> a = new Dictionary<double, double>(level2.Asks);
+
+										Level2Changed?.Invoke(b, a);
 									}
 									else
 										throw new InvalidProgramException("Ошибочный тип пакета");

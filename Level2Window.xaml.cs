@@ -45,6 +45,7 @@ namespace WpfApp1
 	{
 		private ObservableCollection<ItemView> _items = new ObservableCollection<ItemView>();
 		private CancellationTokenSource _cts;
+		private DateTime _prevTime;
 
 		public Level2Window(string symbol,
 			int decimal_price,
@@ -52,6 +53,8 @@ namespace WpfApp1
 			CancellationTokenSource cts)
 		{
 			InitializeComponent();
+
+			_prevTime = DateTime.Now;
 
 			_cts = cts;
 			Title = symbol.ToUpper();
@@ -73,7 +76,7 @@ namespace WpfApp1
 		/// <summary>
 		/// Обновление стакана. Вызывается в другом потоке.
 		/// </summary>		
-		public void Level2Changed(PriceItem[] bids, PriceItem[] asks)
+		public void Level2Changed(IDictionary<double, double> bids, IDictionary<double, double> asks)
 		{
 			this.Dispatcher.BeginInvoke(new Action(() => 
 				this.ChangeLevel2(bids, asks))
@@ -90,18 +93,28 @@ namespace WpfApp1
 				);
 		}
 
-		private void ChangeLevel2(PriceItem[] bids, PriceItem[] asks)
+		private void ChangeLevel2(IDictionary<double, double> bids, IDictionary<double, double> asks)
 		{
+			DateTime now = DateTime.Now;
+
+			if ((now - _prevTime).TotalMilliseconds <= 500)
+				return;
+
+			_prevTime = now;
+
 			// TODO: Оптимизировать
 			_items.Clear();
-			foreach (var p in asks)
+			var Bids = bids.Select(kv => new PriceItem(kv.Key, kv.Value)).OrderByDescending(k => k.Price).ToArray();
+			var Asks = asks.Select(kv => new PriceItem(kv.Key, kv.Value)).OrderByDescending(k => k.Price).ToArray();
+
+			foreach (var p in Asks)
 				_items.Add(new ItemView(p.Price, p.Quantity, Brushes.Red));
 
 			ItemView item = null;
 			if (_items.Count > 0)
 				item = _items[_items.Count - 1];
 			
-			foreach (var p in bids)
+			foreach (var p in Bids)
 				_items.Add(new ItemView(p.Price, p.Quantity, Brushes.Green));
 
 			Grid_Level2.ScrollIntoView(item);
