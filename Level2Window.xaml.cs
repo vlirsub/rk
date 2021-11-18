@@ -92,6 +92,7 @@ namespace WpfApp1
 
 		private void ChangeLevel2(PriceItem[] bids, PriceItem[] asks)
 		{
+			// TODO: Оптимизировать
 			_items.Clear();
 			foreach (var p in asks)
 				_items.Add(new ItemView(p.Price, p.Quantity, Brushes.Red));

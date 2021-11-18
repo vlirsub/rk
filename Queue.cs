@@ -29,7 +29,7 @@ namespace Queue
 		private DataPacket(DataPacketKind kind, object data)
 		{
 			Kind = kind;
-			Data = data;
+			Data = data ?? throw new ArgumentNullException(nameof(data));
 		}
 
 		static public DataPacket New(Exception e)

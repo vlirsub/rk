@@ -42,7 +42,7 @@ namespace Remote
 			public DataRemoteSnapshotClient(string symbol, Uri uri)
 			{
 				_symbol = symbol;
-				_uri = uri ?? throw new ArgumentNullException("uri");
+				_uri = uri ?? throw new ArgumentNullException(nameof(uri));
 			}
 
 			public Level2Snapshot GetSnapshot()
@@ -97,7 +97,7 @@ namespace Remote
 				_ct = ct;
 				_socket = new ClientWebSocket();
 				_bytes = new byte[bufsize];
-				_uri = uri ?? throw new ArgumentNullException("uri");
+				_uri = uri ?? throw new ArgumentNullException(nameof(uri));
 			}
 
 			public void Dispose()
@@ -205,6 +205,7 @@ namespace Remote
 										}
 									}
 
+									// Получение изменений стакана
 									using (DataRemoteDiffClient RemoteDiffClient = new DataRemoteDiffClient(WSSUri, cts.Token))
 									{
 										RemoteDiffClient.Connect();

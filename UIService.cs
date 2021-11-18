@@ -62,7 +62,7 @@ namespace WpfApp1
 			// Очередь обновлений
 			DataQueue queue = new DataQueue();
 
-			// Клиент читающий данные от удаланного сервера
+			// Клиент читающий данные от удалённого сервера
 			IRemoteClient RemoteClient = new DataRemoteClient();
 			RemoteClient.Start(symbol, queue, cts);
 
