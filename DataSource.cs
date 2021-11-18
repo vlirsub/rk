@@ -57,8 +57,11 @@ namespace DataSource
 										Level2Snapshot l2s = packets[i].Data as Level2Snapshot;
 										level2.SetSnapshot(l2s);
 
-										var b = level2.Bids.Select(kv => new PriceItem(kv.Key, kv.Value));
-										var a = level2.Asks.Select(kv => new PriceItem(kv.Key, kv.Value));
+										var b = level2.Bids.Select(kv => new PriceItem(kv.Key, kv.Value))
+											.OrderByDescending(k=> k.Price);
+
+										var a = level2.Asks.Select(kv => new PriceItem(kv.Key, kv.Value))
+											.OrderByDescending(k => k.Price);
 
 										Level2Changed?.Invoke(b.ToArray(), a.ToArray());
 

@@ -69,7 +69,8 @@ namespace Data
 		}
 
 
-		public class DoubleRoundComparer : IComparer<double>
+		public class DoubleRoundComparer : IComparer<double>,
+			IEqualityComparer<double>
 		{
 			private readonly double _epsilon;
 
@@ -85,7 +86,16 @@ namespace Data
 					return 1;
 				else
 					return -1;
-			}			
+			}
+
+			public bool Equals(double x, double y)
+			{
+				return Math.Abs(x - y) < _epsilon;
+			}
+			public int GetHashCode(double obj)
+			{
+				return obj.GetHashCode();
+			}
 		}
 
 		/// <summary>
@@ -93,8 +103,8 @@ namespace Data
 		/// </summary>
 		public class Level2
 		{
-			public SortedDictionary<double, double> Bids { get; private set; }
-			public SortedDictionary<double, double> Asks { get; private set; }
+			public Dictionary<double, double> Bids { get; private set; }
+			public Dictionary<double, double> Asks { get; private set; }
 			public DateTime Time { get; private set; }
 
 			private Int64 _lastUpdateId;
@@ -108,8 +118,11 @@ namespace Data
 			{
 				DoubleRoundComparer comparer = new DoubleRoundComparer(decimals_key);
 
-				Bids = new SortedDictionary<double, double>(comparer);
-				Asks = new SortedDictionary<double, double>(comparer);
+				//Bids = new SortedDictionary<double, double>(comparer);
+				//Asks = new SortedDictionary<double, double>(comparer);
+
+				Bids = new Dictionary<double, double>(comparer);
+				Asks = new Dictionary<double, double>(comparer);
 
 				_lastUpdateId = 0;
 				_symbol = symbol;
