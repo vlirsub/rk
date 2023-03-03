@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text.Json;
-using System.Globalization;
+using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Data;
 using Data.Level2;
+using Newtonsoft.Json;
 using Remote.Data;
 
 namespace Remote
 {
-	/// <summary>
-	/// Добавление данных в очередь
-	/// </summary>
-	public interface IDataAdd
+    /// <summary>
+    /// Добавление данных в очередь
+    /// </summary>
+    public interface IDataAdd
 	{
 		void Enqueue(Level2Snapshot l2s);
 		void Enqueue(DiffData dd);
@@ -31,14 +29,15 @@ namespace Remote
 	}
 
 	namespace Impl
-	{
-		/// <summary>
-		/// Получение снимка стакана
-		/// </summary>
-		class DataRemoteSnapshotClient : IDisposable
+    {
+        /// <summary>
+        /// Получение снимка стакана
+        /// </summary>
+        class DataRemoteSnapshotClient : IDisposable
 		{
 			private readonly string _symbol;
 			private Uri _uri;
+
 			public DataRemoteSnapshotClient(string symbol, Uri uri)
 			{
 				_symbol = symbol;
@@ -51,7 +50,7 @@ namespace Remote
 				{
 					string StringSnapshot = wc.DownloadString(_uri);
 
-					Level2SnapshotRemote l2sr = JsonSerializer.Deserialize<Level2SnapshotRemote>(StringSnapshot);
+					Level2SnapshotRemote l2sr = JsonConvert.DeserializeObject<Level2SnapshotRemote>(StringSnapshot);
 
 					var Bids = l2sr.Bids.Select(
 						s => new PriceItem(
@@ -127,7 +126,7 @@ namespace Remote
 					byte[] msgBytes = Buffer.Skip(Buffer.Offset).Take(Result.Count).ToArray();
 					Msg = Encoding.UTF8.GetString(msgBytes);
 
-					DiffDataRemote ev = JsonSerializer.Deserialize<DiffDataRemote>(Msg);
+					DiffDataRemote ev = JsonConvert.DeserializeObject<DiffDataRemote>(Msg);
 
 					var Bids = ev.Bids.Select(
 						s => new PriceItem(
