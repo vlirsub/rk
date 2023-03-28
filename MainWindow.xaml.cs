@@ -9,7 +9,6 @@ namespace WpfApp1
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private ObservableCollection<ItemView> _items = new ObservableCollection<ItemView>();
 		/// <summary>
 		/// Сервис для запуска чтения стаканов
 		/// </summary>

@@ -6,22 +6,51 @@ using System.Threading.Tasks;
 
 namespace DataSource
 {
+    using Data;
     using Data.Level2;
     using Queue;
 
-    public delegate void Level2ChangedHandler(IDictionary<double, double> bids, IDictionary<double, double> asks);
+    /// <summary>
+    /// Изменение стакана
+    /// </summary>
+    public delegate void Level2DiffChangedHandler(
+        IEnumerable<double> remove,
+        IEnumerable<PriceItemEx> add,
+        IEnumerable<PriceItemEx> replace);
+
+    /// <summary>
+    /// Исключение
+    /// </summary>
     public delegate void Level2ChangedExceptionHandler(Exception E);
 
     public interface ILevel2Notify
     {
-        void Level2Changed(IDictionary<double, double> bids, IDictionary<double, double> asks);
-        void Level2ChangedException(Exception E);
+        /// <summary>
+        /// Изменение стакана
+        /// </summary>
+        void OnLevel2DiffChanged(
+            IEnumerable<double> remove,
+            IEnumerable<PriceItemEx> add,
+            IEnumerable<PriceItemEx> replace);
+
+        /// <summary>
+        /// Исключение
+        /// </summary>
+        void OnLevel2ChangedException(Exception E);
     }
 
     public interface IDataSource
     {
-        event Level2ChangedHandler Level2Changed;
-        event Level2ChangedExceptionHandler Level2ChangedException;
+        /// <summary>
+        /// Изменение стакана
+        /// </summary>
+        event Level2DiffChangedHandler OnLevel2DiffChanged;
+
+        /// <summary>
+        /// Исключение
+        /// </summary>
+        event Level2ChangedExceptionHandler OnLevel2ChangedException;
+
         Task Start(Level2 level2, IDataGet queue, CancellationTokenSource cts);
     }
 
@@ -29,8 +58,15 @@ namespace DataSource
     {
         public class DataSourceClient : IDataSource
         {
-            public event Level2ChangedHandler Level2Changed;
-            public event Level2ChangedExceptionHandler Level2ChangedException;
+            /// <summary>
+            /// Изменение стакана
+            /// </summary>
+            public event Level2DiffChangedHandler OnLevel2DiffChanged;
+
+            /// <summary>
+            /// Исключение
+            /// </summary>
+            public event Level2ChangedExceptionHandler OnLevel2ChangedException;
 
             public Task Start(Level2 level2, IDataGet queue, CancellationTokenSource cts)
             {
@@ -52,25 +88,18 @@ namespace DataSource
                                     else if (packets[i].Kind == DataPacketKind.Snapshot)
                                     {
                                         Level2Snapshot l2s = packets[i].Data as Level2Snapshot;
-                                        level2.SetSnapshot(l2s);
-
-                                        IDictionary<double, double> b = new Dictionary<double, double>(level2.Bids);
-
-                                        IDictionary<double, double> a = new Dictionary<double, double>(level2.Asks);
-
-                                        Level2Changed?.Invoke(b, a);
+                                        IReadOnlyCollection<PriceItemEx> added = level2.SetSnapshot(l2s);
+                                                                                                                                                                                                      
+                                        OnLevel2DiffChanged?.Invoke(null, added, null);
 
                                     }
                                     else if (packets[i].Kind == DataPacketKind.Diff)
                                     {
                                         DiffData dd = packets[i].Data as DiffData;
-                                        level2.AddDiff(dd);
 
-                                        IDictionary<double, double> b = new Dictionary<double, double>(level2.Bids);
+                                        var (remove, add, replace) = level2.AddDiff(dd);
 
-                                        IDictionary<double, double> a = new Dictionary<double, double>(level2.Asks);
-
-                                        Level2Changed?.Invoke(b, a);
+                                        OnLevel2DiffChanged?.Invoke(remove, add, replace);
                                     }
                                     else
                                         throw new InvalidProgramException("Ошибочный тип пакета");
@@ -79,7 +108,7 @@ namespace DataSource
                         }
                         catch (Exception E)
                         {
-                            Level2ChangedException?.Invoke(E);
+                            OnLevel2ChangedException?.Invoke(E);
                         }
                     }
                 }, cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
